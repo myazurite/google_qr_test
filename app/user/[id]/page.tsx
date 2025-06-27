@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import {useEffect, useState} from "react"
+import {useParams} from "next/navigation"
 import Link from "next/link"
-import { fetchUsers, type User } from "@/lib/google-sheets"
+import {fetchUsers, type User} from "@/lib/google-sheets"
 import QRCode from "@/components/qr-code"
 import UserProfile from "@/components/user-profile"
 import LoadingSpinner from "@/components/loading-spinner"
-import { useAuth } from "@/hooks/use-auth"
+import {useAuth} from "@/hooks/use-auth"
 
 // Mock user for fallback when fetch fails
 const MOCK_USER_FALLBACK: User = {
@@ -46,11 +46,14 @@ export default function UserPage() {
   useEffect(() => {
     const loadDisplaySettings = async () => {
       try {
+        console.log("User Page: Loading display settings...")
         const response = await fetch("/api/display-settings")
         if (response.ok) {
           const data = await response.json()
           console.log("User Page: Loaded display settings:", data.settings)
           setDisplaySettings(data.settings)
+        } else {
+          console.error("User Page: Failed to load display settings:", response.status)
         }
       } catch (error) {
         console.error("User Page: Error loading display settings:", error)
@@ -116,8 +119,7 @@ export default function UserPage() {
       exitGuestPreview()
     } else if (user) {
       // User is logged in, go to their home route
-      const homeRoute = getHomeRoute()
-      window.location.href = homeRoute
+      window.location.href = getHomeRoute()
     } else {
       // Public access, go to login page
       window.location.href = "/login"
@@ -140,7 +142,7 @@ export default function UserPage() {
           <div className="error">{error}</div>
           <div className="mt-2">
             <button onClick={handleBackToHome} className="button">
-              {isPublicAccess ? "Go to Login" : "Back to Home"}
+              {isPublicAccess ? "Go to Login" : "Back to Dashboard"}
             </button>
           </div>
         </div>
@@ -156,7 +158,7 @@ export default function UserPage() {
           <p>The user with ID {id} could not be found.</p>
           <div className="mt-2">
             <button onClick={handleBackToHome} className="button">
-              {isPublicAccess ? "Go to Login" : "Back to Home"}
+              {isPublicAccess ? "Go to Login" : "Back to Dashboard"}
             </button>
           </div>
         </div>
@@ -219,8 +221,7 @@ export default function UserPage() {
             }}
           >
             <p style={{ margin: 0, color: "#2e7d32", fontSize: "0.875rem" }}>
-              📱 <strong>Public Access:</strong> You're viewing this profile via QR code.{" "}
-              <Link href="/login">Login</Link> for full system access.
+              📱 <strong>Public Access:</strong> Viewing this profile via QR code.{" "}
             </p>
           </div>
         )}
@@ -243,25 +244,29 @@ export default function UserPage() {
 
         <div className="qr-container">
           <QRCode url={currentUrl} />
-          <p>Scan to access this profile</p>
         </div>
 
         <UserProfile
           user={userData}
           isGuestView={shouldApplyGuestRestrictions}
-          visibleColumns={displaySettings.visibleColumns}
-          alwaysVisibleColumns={displaySettings.alwaysVisible}
+          visibleColumns={displaySettings.visibleColumns || []}
+          alwaysVisibleColumns={displaySettings.alwaysVisible || ["id"]}
         />
 
         <div className="mt-2">
-          <button onClick={handleBackToHome} className="button">
-            {isGuestPreview ? "Back to Admin Dashboard" : isPublicAccess ? "Go to Login" : "Back to Home"}
-          </button>
-          {isPublicAccess && (
-            <Link href="/search" className="button button-secondary" style={{ marginLeft: "1rem" }}>
-              Search More Users
-            </Link>
+          {isGuestPreview && (
+              <button onClick={handleBackToHome} className="button">
+                Back to Admin Dashboard
+              </button>
           )}
+          {/*<button onClick={handleBackToHome} className="button">*/}
+          {/*  {isGuestPreview ? "Back to Admin Dashboard" : isPublicAccess ? "Go to Login" : "Back to Home"}*/}
+          {/*</button>*/}
+          {/*{isPublicAccess && (*/}
+          {/*  <Link href="/search" className="button button-secondary" style={{ marginLeft: "1rem" }}>*/}
+          {/*    Search More Users*/}
+          {/*  </Link>*/}
+          {/*)}*/}
         </div>
       </div>
     </div>

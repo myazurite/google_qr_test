@@ -1,4 +1,4 @@
-import type { User } from "@/lib/google-sheets"
+import type {User} from "@/lib/google-sheets"
 
 interface UserProfileProps {
   user: User
@@ -32,22 +32,36 @@ export default function UserProfile({
   // Function to format field names nicely
   const formatFieldName = (key: string): string => {
     // Special case for ID
-    if (key === "id") return "USER ID"
+    if (key === "id") return "ID"
 
     // Handle common abbreviations and formats
-    const formatted = key
-      .replace(/([A-Z])/g, " $1") // Add space before capital letters
-      .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
-      .replace(/\b\w/g, (str) => str.toUpperCase()) // Capitalize each word
-      .trim()
-
-    return formatted
+    return key
+        .replace(/([A-Z])/g, " $1") // Add space before capital letters
+        .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
+        .replace(/\b\w/g, (str) => str.toUpperCase()) // Capitalize each word
+        .trim()
   }
+
+  // Debug logging for guest view
 
   return (
     <div>
       <h2>{user.name || user.id}</h2>
-      <p className="mb-2">USER ID: {user.id}</p>
+
+      {/* Debug info for admins */}
+      {!isGuestView && (
+        <div style={{ fontSize: "0.875rem", color: "#666", marginBottom: "1rem" }}>
+          <strong>Admin View:</strong> Showing all fields. Guest users see only:{" "}
+          {alwaysVisibleColumns.concat(visibleColumns).join(", ")}
+        </div>
+      )}
+
+      {/* Debug info for guests */}
+      {/*{isGuestView && (*/}
+      {/*  <div style={{ fontSize: "0.875rem", color: "#666", marginBottom: "1rem" }}>*/}
+      {/*    <strong>Guest View:</strong> Showing {entries.length} visible fields*/}
+      {/*  </div>*/}
+      {/*)}*/}
 
       <div className="card">
         <h3>User Information</h3>
@@ -65,7 +79,14 @@ export default function UserProfile({
             </tbody>
           </table>
         ) : (
-          <p>No additional information available.</p>
+          <div>
+            <p>No information available to display.</p>
+            {isGuestView && (
+              <p style={{ fontSize: "0.875rem", color: "#666" }}>
+                Contact an administrator to configure what information is visible to guests.
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>

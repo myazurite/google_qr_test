@@ -104,7 +104,7 @@ export default function SearchPage() {
   const getVisibleFields = (user: User) => {
     if (!isGuestUser && !isGuestPreview) {
       // Admin users (not in preview mode) see all fields
-      return Object.entries(user).filter(([key, value]) => value && value.toString().trim() !== "")
+      return Object.entries(user).filter(([value]) => value && value.toString().trim() !== "")
     }
 
     // Guest users and admin in preview mode see only configured visible fields
@@ -183,13 +183,13 @@ export default function SearchPage() {
         </div>
       )}
 
-      {isGuestUser && !isGuestPreview && (
-        <div className="card" style={{ backgroundColor: "#f0f8ff", border: "1px solid #0066cc" }}>
-          <p style={{ margin: 0, color: "#0066cc" }}>
-            👋 You're logged in as a guest user. <Link href="/login">Login as admin</Link> for full access.
-          </p>
-        </div>
-      )}
+      {/*{isGuestUser && !isGuestPreview && (*/}
+      {/*  <div className="card" style={{ backgroundColor: "#f0f8ff", border: "1px solid #0066cc" }}>*/}
+      {/*    <p style={{ margin: 0, color: "#0066cc" }}>*/}
+      {/*      👋 You're logged in as a guest user. <Link href="/login">Login as admin</Link> for full access.*/}
+      {/*    </p>*/}
+      {/*  </div>*/}
+      {/*)}*/}
 
       <div className="card search-container">
         <h2>Search by USER ID</h2>
@@ -207,11 +207,16 @@ export default function SearchPage() {
         </form>
 
         {/* Back to Home button */}
-        <div style={{ marginTop: "1rem" }}>
-          <button onClick={handleBackToHome} className="button button-secondary">
-            {isGuestPreview ? "Back to Admin Dashboard" : "Back to Homepage"}
-          </button>
-        </div>
+        {isGuestPreview && (
+            <button onClick={handleBackToHome} className="button button-secondary">
+              Back to Dashboard
+            </button>
+        )}
+        {/*<div style={{ marginTop: "1rem" }}>*/}
+        {/*  <button onClick={handleBackToHome} className="button button-secondary">*/}
+        {/*    {isGuestPreview ? "Back to Admin Dashboard" : "Back to Dashboard"}*/}
+        {/*  </button>*/}
+        {/*</div>*/}
       </div>
 
       {loading && <LoadingSpinner />}

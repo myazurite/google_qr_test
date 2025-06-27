@@ -41,22 +41,22 @@ export default function Login() {
     }
   }
 
-  const handleGuestLogin = async () => {
-    console.log("Login: Guest login clicked - auto-filling credentials")
-    setUsername("guest")
-    setPassword("guest123")
-    setError("")
-    setIsLoading(true)
-
-    try {
-      await login("guest", "guest123")
-      // Redirect will happen automatically via the auth provider
-    } catch (err) {
-      setError("Guest login failed")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // const handleGuestLogin = async () => {
+  //   console.log("Login: Guest login clicked - auto-filling credentials")
+  //   setUsername("guest")
+  //   setPassword("guest123")
+  //   setError("")
+  //   setIsLoading(true)
+  //
+  //   try {
+  //     await login("guest", "guest123")
+  //     // Redirect will happen automatically via the auth provider
+  //   } catch (err) {
+  //     setError("Guest login failed")
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
 
   // Show loading state if already authenticated
   if (user) {
@@ -105,31 +105,25 @@ export default function Login() {
           </button>
         </form>
 
-        <div style={{ margin: "1.5rem 0", textAlign: "center", color: "#666" }}>
-          <hr style={{ margin: "1rem 0" }} />
-          <span>or</span>
-        </div>
+        {/*<div style={{ margin: "1.5rem 0", textAlign: "center", color: "#666" }}>*/}
+        {/*  <hr style={{ margin: "1rem 0" }} />*/}
+        {/*  <span>or</span>*/}
+        {/*</div>*/}
 
-        <button
-          onClick={handleGuestLogin}
-          className="button button-secondary"
-          style={{ width: "100%" }}
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in as guest..." : "Continue as Guest"}
-        </button>
+        {/*<button*/}
+        {/*  onClick={handleGuestLogin}*/}
+        {/*  className="button button-secondary"*/}
+        {/*  style={{ width: "100%" }}*/}
+        {/*  disabled={isLoading}*/}
+        {/*>*/}
+        {/*  {isLoading ? "Logging in as guest..." : "Continue as Guest"}*/}
+        {/*</button>*/}
 
-        <div style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#666", textAlign: "center" }}>
-          <p>
-            <strong>Admin Login:</strong> admin / admin123
-          </p>
-          <p>
-            <strong>Guest Login:</strong> guest / guest123
-          </p>
-          <p>
-            <strong>Or click "Continue as Guest" for quick access</strong>
-          </p>
-        </div>
+        {/*<div style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#666", textAlign: "center" }}>*/}
+        {/*  <p>*/}
+        {/*    <strong>"Continue as Guest" for quick access</strong>*/}
+        {/*  </p>*/}
+        {/*</div>*/}
       </div>
     </div>
   )

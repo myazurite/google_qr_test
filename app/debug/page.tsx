@@ -62,7 +62,7 @@ export default function DebugPage() {
             {testingApi ? "Testing..." : "Test Google Sheets API"}
           </button>
           <Link href={homeRoute} className="button" style={{ marginLeft: "1rem" }}>
-            Back to Home
+            Back to Dashboard
           </Link>
         </div>
 

@@ -41,7 +41,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 // Mock users for demonstration
 const MOCK_USERS = [
-  { username: "admin", password: "admin123", role: "admin" as UserRole },
+  { username: "admin", password: "Longnvh.2110", role: "admin" as UserRole },
   { username: "guest", password: "guest123", role: "guest" as UserRole },
 ]
 
