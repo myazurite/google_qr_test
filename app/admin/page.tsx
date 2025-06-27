@@ -15,22 +15,29 @@ export default function AdminDashboard() {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState("")
   const [dataSource, setDataSource] = useState<"mock" | "sheets" | "empty" | "unknown">("unknown")
-  const { user, logout } = useAuth()
+  const { user, logout, enterGuestPreview } = useAuth()
   const router = useRouter()
 
-  const loadData = async () => {
+  const loadData = async (forceRefresh = false) => {
     try {
-      setLoading(true)
-      console.log("Admin: Loading user data...")
-      const data = await fetchUsers()
+      if (forceRefresh) {
+        setRefreshing(true)
+        console.log("Admin: Force refreshing data from Google Sheets...")
+      } else {
+        setLoading(true)
+        console.log("Admin: Loading user data...")
+      }
+
+      const data = await fetchUsers(forceRefresh)
       setUsers(data)
       setFilteredUsers(data)
 
       // Check if this is mock data
       const isMockData = data.some(
-        (user) => user.id === "KH00001" && user.name === "John Doe" && user.email === "john.doe@example.com",
+        (user) => user.id === "EMP001" && user.name === "John Doe" && user.email === "john.doe@example.com",
       )
 
       if (isMockData) {
@@ -48,7 +55,13 @@ export default function AdminDashboard() {
       console.error("Admin: Error loading data:", err)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
+  }
+
+  const handleRefresh = () => {
+    console.log("Admin: Manual refresh triggered")
+    loadData(true) // Force refresh
   }
 
   // Handle search - now searches across all fields dynamically
@@ -70,8 +83,9 @@ export default function AdminDashboard() {
   }
 
   const handleTestGuestSearch = () => {
-    // Open guest search in a new tab so admin can easily compare
-    window.open("/search", "_blank")
+    // Enter guest preview mode instead of opening a new tab
+    console.log("Admin: Entering guest preview mode for testing")
+    enterGuestPreview()
   }
 
   useEffect(() => {
@@ -97,9 +111,21 @@ export default function AdminDashboard() {
 
   return (
     <div className="container">
-      <Header title="Admin Dashboard" onRefresh={loadData} onLogout={logout} configLink="/admin/config" />
+      <Header
+        title="Admin Dashboard"
+        onRefresh={handleRefresh}
+        onLogout={logout}
+        configLink="/admin/config"
+        showRefresh={!refreshing}
+      />
 
       {error && <div className="error">{error}</div>}
+
+      {refreshing && (
+        <div className="card" style={{ backgroundColor: "#f0f8ff", border: "1px solid #0066cc" }}>
+          <p style={{ margin: 0, color: "#0066cc" }}>🔄 Refreshing data from Google Sheets...</p>
+        </div>
+      )}
 
       <div className="card">
         <div className="flex justify-between align-center">
@@ -130,11 +156,8 @@ export default function AdminDashboard() {
             Guest Display Settings
           </Link>
           <button onClick={handleTestGuestSearch} className="button button-secondary">
-            Test Guest Search (New Tab)
+            🔍 Preview as Guest
           </button>
-          <Link href="/admin/id-debug" className="button button-secondary">
-            ID Management
-          </Link>
           <Link href="/admin/sheets-debug" className="button button-secondary">
             Debug Google Sheets
           </Link>
@@ -160,7 +183,7 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {loading ? <LoadingSpinner /> : <UserTable users={filteredUsers} />}
+      {loading || refreshing ? <LoadingSpinner /> : <UserTable users={filteredUsers} />}
     </div>
   )
 }

@@ -118,6 +118,18 @@ export default function Login() {
         >
           {isLoading ? "Logging in as guest..." : "Continue as Guest"}
         </button>
+
+        <div style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#666", textAlign: "center" }}>
+          <p>
+            <strong>Admin Login:</strong> admin / admin123
+          </p>
+          <p>
+            <strong>Guest Login:</strong> guest / guest123
+          </p>
+          <p>
+            <strong>Or click "Continue as Guest" for quick access</strong>
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -12,20 +12,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { visibleColumns, idColumn } = body
+    const { visibleColumns } = body
 
     if (visibleColumns !== undefined && !Array.isArray(visibleColumns)) {
       return NextResponse.json({ error: "visibleColumns must be an array" }, { status: 400 })
     }
 
-    if (idColumn !== undefined && typeof idColumn !== "string") {
-      return NextResponse.json({ error: "idColumn must be a string" }, { status: 400 })
-    }
-
     // Update the settings
     const updateData: any = {}
     if (visibleColumns !== undefined) updateData.visibleColumns = visibleColumns
-    if (idColumn !== undefined) updateData.idColumn = idColumn
 
     const updatedSettings = updateDisplaySettings(updateData)
 

@@ -7,9 +7,7 @@ interface UserTableProps {
 
 export default function UserTable({ users }: UserTableProps) {
   // Check if this is mock data by looking for the specific mock user
-  const isMockData = users.some(
-    (user) => user.id === "KH00001" && user.name === "John Doe" && user.email === "john.doe@example.com",
-  )
+  const isMockData = users.some((user) => user.id === "EMP001" && user.name === "John Doe")
 
   // Get all unique column names from all users
   const allColumns = new Set<string>()
@@ -76,15 +74,15 @@ export default function UserTable({ users }: UserTableProps) {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
+              {users.map((user, index) => (
+                <tr key={user.id || index}>
                   <td>{user.id}</td>
                   {displayColumns.map((column) => (
                     <td key={column}>{user[column] || "-"}</td>
                   ))}
                   <td>
                     <Link href={`/user/${user.id}`} className="button">
-                      Export QR
+                      View Profile & QR
                     </Link>
                   </td>
                 </tr>

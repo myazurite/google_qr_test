@@ -11,7 +11,6 @@ import Header from "@/components/header"
 export default function DisplaySettingsPage() {
   const [availableColumns, setAvailableColumns] = useState<string[]>([])
   const [visibleColumns, setVisibleColumns] = useState<string[]>([])
-  const [idColumn, setIdColumn] = useState<string>("")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
@@ -39,7 +38,7 @@ export default function DisplaySettingsPage() {
       // Load users to get available columns
       const users = await fetchUsers()
       const columns = getAvailableColumns(users)
-      // Remove 'id' from available columns since it's handled separately
+      // Remove 'id' from available columns since it's always visible
       const filteredColumns = columns.filter((col) => col !== "id")
       setAvailableColumns(filteredColumns)
 
@@ -48,7 +47,6 @@ export default function DisplaySettingsPage() {
       if (settingsResponse.ok) {
         const settingsData = await settingsResponse.json()
         setVisibleColumns(settingsData.settings.visibleColumns || [])
-        setIdColumn(settingsData.settings.idColumn || "")
       }
     } catch (error) {
       console.error("Error loading data:", error)
@@ -68,7 +66,7 @@ export default function DisplaySettingsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ visibleColumns, idColumn }),
+        body: JSON.stringify({ visibleColumns }),
       })
 
       if (response.ok) {
@@ -121,41 +119,17 @@ export default function DisplaySettingsPage() {
 
       <div className="card">
         <h2>Configure Guest View</h2>
-        <p>Choose which columns are visible to guest users and configure the USER ID source.</p>
+        <p>Choose which columns are visible to guest users and QR code scanners. USER ID is always visible.</p>
 
         {availableColumns.length === 0 ? (
-          <div className="error">No columns found. Make sure your Google Sheet has data.</div>
+          <div className="error">No columns found. Make sure your Google Sheet has data and an ID column.</div>
         ) : (
           <div>
-            {/* USER ID Configuration */}
-            <div className="form-group">
-              <label htmlFor="id-column">USER ID Source:</label>
-              <select
-                id="id-column"
-                className="form-control"
-                value={idColumn}
-                onChange={(e) => setIdColumn(e.target.value)}
-                style={{ marginBottom: "0.5rem" }}
-              >
-                <option value="">Auto-generate (KH##### format)</option>
-                {availableColumns.map((column) => (
-                  <option key={column} value={column}>
-                    Use column: {formatColumnName(column)}
-                  </option>
-                ))}
-              </select>
-              <small>
-                {idColumn
-                  ? `USER ID will be taken from the "${formatColumnName(idColumn)}" column. If empty, auto-generated IDs will be used.`
-                  : "USER ID will be auto-generated in KH##### format (e.g., KH12345)."}
-              </small>
-            </div>
-
             {/* Visible Columns Configuration */}
             <div className="form-group">
-              <label>Additional Visible Columns:</label>
+              <label>Visible Columns for Guests:</label>
               <small style={{ display: "block", marginBottom: "1rem", color: "#666" }}>
-                USER ID is always visible. Select additional columns to show to guest users.
+                USER ID is always visible. Select additional columns to show to guest users and QR code scanners.
               </small>
               <div style={{ marginTop: "1rem" }}>
                 {availableColumns.map((column) => {
@@ -213,8 +187,7 @@ export default function DisplaySettingsPage() {
       <div className="card">
         <h3>Current Settings</h3>
         <p>
-          <strong>USER ID Source:</strong>{" "}
-          {idColumn ? `Column "${formatColumnName(idColumn)}"` : "Auto-generated (KH##### format)"}
+          <strong>USER ID:</strong> Always visible (from Google Sheets ID column)
         </p>
         <p>
           <strong>Guest Visible Columns:</strong> USER ID
@@ -227,7 +200,7 @@ export default function DisplaySettingsPage() {
 
       <div className="card">
         <h3>Preview</h3>
-        <p>This is what guest users will see when they search:</p>
+        <p>This is what guest users and QR code scanners will see:</p>
         <div className="table-container">
           <table className="table">
             <thead>
@@ -240,7 +213,7 @@ export default function DisplaySettingsPage() {
             </thead>
             <tbody>
               <tr>
-                <td>{idColumn ? `From ${formatColumnName(idColumn)}` : "KH12345"}</td>
+                <td>EMP001</td>
                 {visibleColumns.map((column) => (
                   <td key={column}>Sample {formatColumnName(column)}</td>
                 ))}

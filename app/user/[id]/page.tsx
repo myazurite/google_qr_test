@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth"
 
 // Mock user for fallback when fetch fails
 const MOCK_USER_FALLBACK: User = {
-  id: "KH00001",
+  id: "EMP001",
   name: "John Doe",
   email: "john.doe@example.com",
   phone: "+1 555-123-4567",
@@ -23,8 +23,7 @@ const MOCK_USER_FALLBACK: User = {
 export default function UserPage() {
   const params = useParams()
   const id = params.id as string
-  const { user, getHomeRoute } = useAuth()
-  const homeRoute = getHomeRoute()
+  const { user, getHomeRoute, isGuestPreview, exitGuestPreview } = useAuth()
 
   const [userData, setUserData] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -34,11 +33,14 @@ export default function UserPage() {
     alwaysVisible: string[]
   }>({
     visibleColumns: [],
-    alwaysVisible: ["id"],
+    alwaysVisible: [],
   })
   const [usedFallback, setUsedFallback] = useState(false)
 
+  // For public access (QR codes), treat as guest view
+  const isPublicAccess = !user
   const isGuestUser = user?.role === "guest"
+  const shouldApplyGuestRestrictions = isPublicAccess || isGuestUser || isGuestPreview
 
   // Load display settings
   useEffect(() => {
@@ -55,10 +57,9 @@ export default function UserPage() {
       }
     }
 
-    if (user) {
-      loadDisplaySettings()
-    }
-  }, [user])
+    // Load display settings regardless of auth status for public access
+    loadDisplaySettings()
+  }, [])
 
   useEffect(() => {
     const loadUser = async () => {
@@ -75,9 +76,7 @@ export default function UserPage() {
           setUserData(foundUser)
         } else {
           // If the specific user is not found, check if we're using mock data
-          const isMockData = users.some(
-            (u) => u.id === "KH00001" && u.name === "John Doe" && u.email === "john.doe@example.com",
-          )
+          const isMockData = users.some((u) => u.id === "EMP001" && u.name === "John Doe")
 
           if (isMockData) {
             // If we're using mock data, provide a fallback user
@@ -107,25 +106,22 @@ export default function UserPage() {
       }
     }
 
-    if (id && user) {
+    if (id) {
       loadUser()
     }
-  }, [id, user])
+  }, [id])
 
-  if (!user) {
-    return (
-      <div className="container">
-        <div className="card user-profile">
-          <h1>Access Required</h1>
-          <p>Please login to view this profile.</p>
-          <div className="mt-2">
-            <Link href="/login" className="button">
-              Go to Login
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+  const handleBackToHome = () => {
+    if (isGuestPreview) {
+      exitGuestPreview()
+    } else if (user) {
+      // User is logged in, go to their home route
+      const homeRoute = getHomeRoute()
+      window.location.href = homeRoute
+    } else {
+      // Public access, go to login page
+      window.location.href = "/login"
+    }
   }
 
   if (loading) {
@@ -143,9 +139,9 @@ export default function UserPage() {
           <h1>Error</h1>
           <div className="error">{error}</div>
           <div className="mt-2">
-            <Link href={homeRoute} className="button">
-              Back to Dashboard
-            </Link>
+            <button onClick={handleBackToHome} className="button">
+              {isPublicAccess ? "Go to Login" : "Back to Home"}
+            </button>
           </div>
         </div>
       </div>
@@ -159,9 +155,9 @@ export default function UserPage() {
           <h1>User Not Found</h1>
           <p>The user with ID {id} could not be found.</p>
           <div className="mt-2">
-            <Link href={homeRoute} className="button">
-              Back to Dashboard
-            </Link>
+            <button onClick={handleBackToHome} className="button">
+              {isPublicAccess ? "Go to Login" : "Back to Home"}
+            </button>
           </div>
         </div>
       </div>
@@ -174,6 +170,28 @@ export default function UserPage() {
     <div className="container">
       <div className="card user-profile">
         <h1>User Profile</h1>
+
+        {isGuestPreview && (
+          <div
+            style={{
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffeeba",
+              padding: "0.75rem",
+              marginBottom: "1rem",
+              borderRadius: "4px",
+              color: "#856404",
+            }}
+          >
+            <div className="flex justify-between align-center">
+              <p style={{ margin: 0 }}>
+                🔍 <strong>Admin Preview Mode:</strong> You're seeing exactly what guest users see.
+              </p>
+              <button onClick={exitGuestPreview} className="button button-secondary" style={{ fontSize: "0.875rem" }}>
+                Exit Preview
+              </button>
+            </div>
+          </div>
+        )}
 
         {usedFallback && (
           <div
@@ -190,7 +208,24 @@ export default function UserPage() {
           </div>
         )}
 
-        {isGuestUser && (
+        {isPublicAccess && (
+          <div
+            style={{
+              backgroundColor: "#e8f5e8",
+              border: "1px solid #4caf50",
+              padding: "0.75rem",
+              marginBottom: "1rem",
+              borderRadius: "4px",
+            }}
+          >
+            <p style={{ margin: 0, color: "#2e7d32", fontSize: "0.875rem" }}>
+              📱 <strong>Public Access:</strong> You're viewing this profile via QR code.{" "}
+              <Link href="/login">Login</Link> for full system access.
+            </p>
+          </div>
+        )}
+
+        {isGuestUser && !isGuestPreview && !isPublicAccess && (
           <div
             style={{
               backgroundColor: "#f0f8ff",
@@ -201,7 +236,7 @@ export default function UserPage() {
             }}
           >
             <p style={{ margin: 0, color: "#0066cc", fontSize: "0.875rem" }}>
-              👋 Viewing as guest user.
+              👋 Viewing as guest user. <Link href="/login">Login as admin</Link> for full access.
             </p>
           </div>
         )}
@@ -213,15 +248,20 @@ export default function UserPage() {
 
         <UserProfile
           user={userData}
-          isGuestView={isGuestUser}
+          isGuestView={shouldApplyGuestRestrictions}
           visibleColumns={displaySettings.visibleColumns}
           alwaysVisibleColumns={displaySettings.alwaysVisible}
         />
 
         <div className="mt-2">
-          <Link href={homeRoute} className="button">
-            Back to Dashboard
-          </Link>
+          <button onClick={handleBackToHome} className="button">
+            {isGuestPreview ? "Back to Admin Dashboard" : isPublicAccess ? "Go to Login" : "Back to Home"}
+          </button>
+          {isPublicAccess && (
+            <Link href="/search" className="button button-secondary" style={{ marginLeft: "1rem" }}>
+              Search More Users
+            </Link>
+          )}
         </div>
       </div>
     </div>

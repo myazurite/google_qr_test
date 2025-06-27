@@ -9,10 +9,13 @@ export interface User {
   [key: string]: string | undefined // Allow for any dynamic fields
 }
 
+// Detect whether we are executing in the browser or on the server
+const isBrowser = typeof window !== "undefined"
+
 // Mock data for development/fallback
 const MOCK_USERS: User[] = [
   {
-    id: "KH00001",
+    id: "EMP001",
     name: "John Doe",
     email: "john.doe@example.com",
     phone: "+1 555-123-4567",
@@ -21,7 +24,7 @@ const MOCK_USERS: User[] = [
     position: "Software Engineer",
   },
   {
-    id: "KH00002",
+    id: "EMP002",
     name: "Jane Smith",
     email: "jane.smith@example.com",
     phone: "+1 555-987-6543",
@@ -30,7 +33,7 @@ const MOCK_USERS: User[] = [
     position: "Product Manager",
   },
   {
-    id: "KH00003",
+    id: "EMP003",
     name: "Robert Johnson",
     email: "robert.j@example.com",
     phone: "+1 555-456-7890",
@@ -39,7 +42,7 @@ const MOCK_USERS: User[] = [
     position: "Data Analyst",
   },
   {
-    id: "KH00004",
+    id: "EMP004",
     name: "Emily Davis",
     email: "emily.d@example.com",
     phone: "+1 555-789-0123",
@@ -48,7 +51,7 @@ const MOCK_USERS: User[] = [
     position: "UX Designer",
   },
   {
-    id: "KH00005",
+    id: "EMP005",
     name: "Michael Wilson",
     email: "michael.w@example.com",
     phone: "+1 555-234-5678",
@@ -58,23 +61,36 @@ const MOCK_USERS: User[] = [
   },
 ]
 
-// Function to fetch data from Google Sheets via API route
-async function fetchFromGoogleSheetsAPI(): Promise<User[]> {
-  console.log("GS: Fetching data from Google Sheets API...")
+async function fetchFromGoogleSheetsAPI(forceRefresh = false): Promise<User[]> {
+  console.log("GS: Fetching data from Google Sheets API...", forceRefresh ? "(forced refresh)" : "")
 
   try {
-    // Use a timestamp to prevent caching
-    const timestamp = new Date().getTime()
-    const randomParam = Math.random()
-    const url = `/api/sheets-data?t=${timestamp}&r=${randomParam}`
+    // Use multiple cache-busting parameters
+    const params = new URLSearchParams({
+      t: Date.now().toString(),
+      r: Math.random().toString(36).slice(2),
+      refresh: forceRefresh ? "1" : "0",
+    })
 
-    console.log("GS: Making request to:", url)
+    // Build the request URL:
+    // – In the browser → relative path (same origin, avoids CORS)
+    // – On the server  → absolute path (needs host)
+    const baseUrl = isBrowser
+      ? "" // same-origin
+      : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+
+    const url = `${baseUrl}/api/sheets-data?${params.toString()}`
+
+    console.log("GS: Making request to:", url.replace(/[&?](t|r|refresh)=[^&]*/g, ""))
 
     const response = await fetchWithRetry(url, {
       retries: 2,
-      timeout: 8000,
+      timeout: 12_000,
       headers: {
         Accept: "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
     })
 
@@ -83,52 +99,25 @@ async function fetchFromGoogleSheetsAPI(): Promise<User[]> {
     if (!response.ok) {
       const errorText = await response.text()
       console.error("GS: API error response:", errorText)
-
-      // Try to parse error details
-      let errorData
-      try {
-        errorData = JSON.parse(errorText)
-      } catch (e) {
-        errorData = { error: errorText }
-      }
-
-      throw new Error(`API error: ${response.status} - ${errorData.error || errorText}`)
+      throw new Error(`API error: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log("GS: Successfully fetched data from API:", data.length, "users")
-
-    // Check if the data looks like our mock data
-    const isMockData = data.some(
-      (user: User) => user.id === "KH00001" && user.name === "John Doe" && user.email === "john.doe@example.com",
-    )
-
-    if (isMockData) {
-      console.log("GS: WARNING - Data appears to be mock data")
-    } else {
-      console.log("GS: Data appears to be from Google Sheets")
-    }
-
+    console.log("GS: Successfully fetched", data.length, "users from API")
     return data
   } catch (error) {
     console.error("GS: Error fetching from Google Sheets API:", error)
-
-    // Provide more context about the error
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      throw new Error("Network error: Unable to connect to the API. Please check your internet connection.")
-    }
-
     throw error
   }
 }
 
 // Main function to fetch users (with fallback to mock data)
-export async function fetchUsers(): Promise<User[]> {
-  console.log("GS: fetchUsers called")
+export async function fetchUsers(forceRefresh = false): Promise<User[]> {
+  console.log("GS: fetchUsers called", forceRefresh ? "(forced refresh)" : "")
 
   try {
     // Try to fetch from Google Sheets via API route
-    const users = await fetchFromGoogleSheetsAPI()
+    const users = await fetchFromGoogleSheetsAPI(forceRefresh)
     if (users && users.length > 0) {
       return users
     }
@@ -143,12 +132,7 @@ export async function fetchUsers(): Promise<User[]> {
   return [...MOCK_USERS]
 }
 
-// Function to generate a new user ID
-export function generateUserId(rowNumber: number): string {
-  return `KH${rowNumber.toString().padStart(5, "0")}`
-}
-
 // Function to validate user data
 export function validateUser(user: Partial<User>): boolean {
-  return !!user.id
+  return !!(user.id && (user.name || user.email))
 }

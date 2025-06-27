@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { getDisplaySettings } from "@/lib/display-settings"
-import { getOrCreatePersistentId } from "@/lib/id-manager"
 
 // Google Sheets configuration
 const SHEET_ID = process.env.GOOGLE_SHEET_ID
@@ -14,7 +13,7 @@ interface User {
 // Mock data for fallback
 const MOCK_USERS = [
   {
-    id: "KH00001",
+    id: "EMP001",
     name: "John Doe",
     email: "john.doe@example.com",
     phone: "+1 555-123-4567",
@@ -23,7 +22,7 @@ const MOCK_USERS = [
     position: "Software Engineer",
   },
   {
-    id: "KH00002",
+    id: "EMP002",
     name: "Jane Smith",
     email: "jane.smith@example.com",
     phone: "+1 555-987-6543",
@@ -32,7 +31,7 @@ const MOCK_USERS = [
     position: "Product Manager",
   },
   {
-    id: "KH00003",
+    id: "EMP003",
     name: "Robert Johnson",
     email: "robert.j@example.com",
     phone: "+1 555-456-7890",
@@ -41,7 +40,7 @@ const MOCK_USERS = [
     position: "Data Analyst",
   },
   {
-    id: "KH00004",
+    id: "EMP004",
     name: "Emily Davis",
     email: "emily.d@example.com",
     phone: "+1 555-789-0123",
@@ -50,7 +49,7 @@ const MOCK_USERS = [
     position: "UX Designer",
   },
   {
-    id: "KH00005",
+    id: "EMP005",
     name: "Michael Wilson",
     email: "michael.w@example.com",
     phone: "+1 555-234-5678",
@@ -71,7 +70,7 @@ function getStandardFieldName(columnName: string): string {
   const normalized = normalizeColumnName(columnName)
 
   if (normalized.includes("name") || normalized.includes("fullname")) return "name"
-  if (normalized.includes("email") || normalized.includes("mail")) return "email"
+  if (normalized.includes("email")) return "email"
   if (normalized.includes("phone") || normalized.includes("mobile") || normalized.includes("tel")) return "phone"
   if (normalized.includes("address") || normalized.includes("location")) return "address"
   if (normalized.includes("company") || normalized.includes("organization")) return "company"
@@ -80,8 +79,18 @@ function getStandardFieldName(columnName: string): string {
   return columnName
 }
 
+// Safely turn any cell value into a trimmed string
+function toTrimmedString(val: unknown): string {
+  return typeof val === "string" ? val.trim() : val !== undefined && val !== null ? String(val).trim() : ""
+}
+
 export async function GET(request: Request) {
   console.log("=== SHEETS-DATA API START ===")
+
+  const url = new URL(request.url)
+  const forceRefresh = url.searchParams.get("refresh") === "1"
+
+  console.log("Force refresh:", forceRefresh)
   console.log("Sheet ID:", SHEET_ID ? "SET" : "NOT SET")
   console.log("API Key:", API_KEY ? "SET" : "NOT SET")
 
@@ -89,25 +98,40 @@ export async function GET(request: Request) {
   if (!SHEET_ID || !API_KEY) {
     console.log("Environment variables missing, returning mock data")
     return NextResponse.json(MOCK_USERS, {
-      headers: { "Cache-Control": "no-store, max-age=0" },
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     })
   }
 
   try {
     // Get display settings
     const displaySettings = getDisplaySettings()
-    const configuredIdColumn = displaySettings.idColumn
-    console.log("Configured ID column:", configuredIdColumn || "Auto-generate")
+    console.log("Display settings:", displaySettings)
 
-    // Try the simplest possible approach - get all data from the first sheet
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A1:Z1000?key=${API_KEY}`
-    console.log("Making request to Google Sheets...")
+    const majorDimension = "ROWS"
+    const valueRender = "UNFORMATTED_VALUE"
+    const dateTimeRenderOption = forceRefresh ? "FORMATTED_STRING" : "SERIAL_NUMBER"
 
-    const response = await fetch(url, {
+    const sheetsUrlBase = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A1:Z1000`
+    const sheetsUrl =
+      `${sheetsUrlBase}?key=${API_KEY}` +
+      `&majorDimension=${majorDimension}` +
+      `&valueRenderOption=${valueRender}` +
+      `&dateTimeRenderOption=${dateTimeRenderOption}`
+
+    console.log("Making request to Google Sheets…")
+
+    const response = await fetch(sheetsUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
         "User-Agent": "NextJS-GoogleSheets/1.0",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
     })
 
@@ -119,7 +143,11 @@ export async function GET(request: Request) {
       console.error("Google Sheets API error:", response.status, errorText)
       console.log("Falling back to mock data due to API error")
       return NextResponse.json(MOCK_USERS, {
-        headers: { "Cache-Control": "no-store, max-age=0" },
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       })
     }
 
@@ -130,7 +158,11 @@ export async function GET(request: Request) {
     if (values.length === 0) {
       console.log("No data in sheet, returning mock data")
       return NextResponse.json(MOCK_USERS, {
-        headers: { "Cache-Control": "no-store, max-age=0" },
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       })
     }
 
@@ -143,65 +175,124 @@ export async function GET(request: Request) {
     if (headers.length === 0 || rows.length === 0) {
       console.log("No headers or data rows, returning mock data")
       return NextResponse.json(MOCK_USERS, {
-        headers: { "Cache-Control": "no-store, max-age=0" },
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       })
     }
 
-    // Find ID column index
+    // Find ID column (case insensitive)
     let idColumnIndex = -1
-    if (configuredIdColumn) {
-      idColumnIndex = headers.findIndex((header: string) => header === configuredIdColumn)
-      console.log(`ID column "${configuredIdColumn}" found at index:`, idColumnIndex)
+    const idColumnNames = ["id", "user id", "userid", "user_id", "employee id", "emp id", "empid"]
+
+    for (let i = 0; i < headers.length; i++) {
+      const headerLower = headers[i].toLowerCase().trim()
+      if (idColumnNames.includes(headerLower)) {
+        idColumnIndex = i
+        console.log(`Found ID column "${headers[i]}" at index ${i}`)
+        break
+      }
     }
+
+    if (idColumnIndex === -1) {
+      console.log("No ID column found in headers:", headers)
+      console.log("Falling back to mock data")
+      return NextResponse.json(MOCK_USERS, {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      })
+    }
+
+    const users: User[] = []
+    const usedIds = new Set<string>()
 
     // Convert rows to users
-    const users: User[] = rows.map((row: string[]) => {
+    rows.forEach((row: string[], rowIndex: number) => {
       const user: User = { id: "" }
 
-      // Map all columns
-      headers.forEach((header: string, colIndex: number) => {
-        if (colIndex >= row.length) return
-        const value = row[colIndex] || ""
-        if (!value.trim()) return
-
-        const standardField = getStandardFieldName(header)
-        user[standardField] = value
-      })
-
-      // Set ID
-      let configuredId = ""
-      if (configuredIdColumn && idColumnIndex >= 0 && idColumnIndex < row.length) {
-        configuredId = row[idColumnIndex]?.trim() || ""
+      // Get ID from the ID column
+      let userId = ""
+      if (idColumnIndex < row.length) {
+        const rawId = row[idColumnIndex]
+        userId = toTrimmedString(rawId)
       }
 
-      user.id = getOrCreatePersistentId(row, headers, configuredId)
-      return user
+      // Skip rows without ID or with duplicate IDs
+      if (!userId) {
+        console.log(`Row ${rowIndex + 2} skipped: no ID`)
+        return
+      }
+
+      if (usedIds.has(userId)) {
+        console.log(`Row ${rowIndex + 2} skipped: duplicate ID "${userId}"`)
+        return
+      }
+
+      usedIds.add(userId)
+      user.id = userId
+
+      // Map all other columns
+      headers.forEach((header: string, colIndex: number) => {
+        // Skip the ID column as we've already processed it
+        if (colIndex === idColumnIndex) return
+
+        // Ignore entirely-empty trailing cells
+        if (colIndex >= row.length) return
+
+        const raw = row[colIndex]
+        const valueStr = toTrimmedString(raw)
+
+        // Skip empty values
+        if (!valueStr) return
+
+        const standardField = getStandardFieldName(header)
+        user[standardField] = valueStr
+      })
+
+      // Only add users with some data beyond just the ID
+      const hasAdditionalData = Object.keys(user).length > 1
+      if (hasAdditionalData) {
+        users.push(user)
+      } else {
+        console.log(`User with ID "${userId}" skipped: no additional data`)
+      }
     })
 
-    // Filter valid users
-    const validUsers = users.filter((user) => {
-      const hasData = Object.values(user).some((value) => value && value.toString().trim() !== "")
-      return hasData && user.id
-    })
+    console.log("Valid users:", users.length)
 
-    console.log("Valid users:", validUsers.length)
-
-    if (validUsers.length === 0) {
+    if (users.length === 0) {
       console.log("No valid users found, returning mock data")
       return NextResponse.json(MOCK_USERS, {
-        headers: { "Cache-Control": "no-store, max-age=0" },
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       })
     }
 
     console.log("=== SHEETS-DATA API SUCCESS ===")
-    return NextResponse.json(validUsers, {
-      headers: { "Cache-Control": "no-store, max-age=0" },
+    return NextResponse.json(users, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     })
   } catch (error) {
     console.error("Exception in sheets-data API:", error)
     console.log("Falling back to mock data due to exception")
     return NextResponse.json(MOCK_USERS, {
-      headers: { "Cache-Control": "no-store, max-age=0" },
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     })
   }
 }

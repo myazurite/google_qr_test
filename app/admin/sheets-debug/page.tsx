@@ -161,26 +161,26 @@ export default function SheetsDebugPage() {
         </div>
       )}
 
-      {/*<div className="card">*/}
-      {/*  <h3>Common Issues & Solutions</h3>*/}
-      {/*  <ul>*/}
-      {/*    <li>*/}
-      {/*      <strong>Missing Environment Variables:</strong> Make sure GOOGLE_SHEET_ID and GOOGLE_SHEETS_API_KEY are set*/}
-      {/*    </li>*/}
-      {/*    <li>*/}
-      {/*      <strong>HTTP 403 Forbidden:</strong> Check if your Google Sheet is publicly readable*/}
-      {/*    </li>*/}
-      {/*    <li>*/}
-      {/*      <strong>HTTP 400 Bad Request:</strong> Verify your Sheet ID is correct*/}
-      {/*    </li>*/}
-      {/*    <li>*/}
-      {/*      <strong>HTTP 403 API Key Error:</strong> Ensure your API key has Google Sheets API enabled*/}
-      {/*    </li>*/}
-      {/*    <li>*/}
-      {/*      <strong>Network Errors:</strong> Check internet connectivity and firewall settings*/}
-      {/*    </li>*/}
-      {/*  </ul>*/}
-      {/*</div>*/}
+      <div className="card">
+        <h3>Common Issues & Solutions</h3>
+        <ul>
+          <li>
+            <strong>Missing Environment Variables:</strong> Make sure GOOGLE_SHEET_ID and GOOGLE_SHEETS_API_KEY are set
+          </li>
+          <li>
+            <strong>HTTP 403 Forbidden:</strong> Check if your Google Sheet is publicly readable
+          </li>
+          <li>
+            <strong>HTTP 400 Bad Request:</strong> Verify your Sheet ID is correct
+          </li>
+          <li>
+            <strong>HTTP 403 API Key Error:</strong> Ensure your API key has Google Sheets API enabled
+          </li>
+          <li>
+            <strong>Network Errors:</strong> Check internet connectivity and firewall settings
+          </li>
+        </ul>
+      </div>
     </div>
   )
 }

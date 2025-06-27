@@ -46,7 +46,7 @@ export default function DebugPage() {
   }, [])
 
   const isMockData = users.some(
-    (user) => user.id === "KH00001" && user.name === "John Doe" && user.email === "john.doe@example.com",
+    (user) => user.id === "EMP001" && user.name === "John Doe" && user.email === "john.doe@example.com",
   )
 
   return (
@@ -62,7 +62,7 @@ export default function DebugPage() {
             {testingApi ? "Testing..." : "Test Google Sheets API"}
           </button>
           <Link href={homeRoute} className="button" style={{ marginLeft: "1rem" }}>
-            Back to Dashboard
+            Back to Home
           </Link>
         </div>
 

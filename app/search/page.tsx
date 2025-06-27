@@ -1,18 +1,19 @@
 "use client"
 
+import Link from "next/link"
+
 import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { fetchUsers, type User } from "@/lib/google-sheets"
 import Header from "@/components/header"
 import LoadingSpinner from "@/components/loading-spinner"
 
 export default function SearchPage() {
-  const [searchId, setSearchId] = useState("")
-  const [searchResult, setSearchResult] = useState<User | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchResults, setSearchResults] = useState<User[]>([])
   const [searched, setSearched] = useState(false)
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
@@ -23,7 +24,7 @@ export default function SearchPage() {
     visibleColumns: [],
     alwaysVisible: ["id"],
   })
-  const { user, logout, loading: authLoading } = useAuth()
+  const { user, logout, exitGuestPreview, isGuestPreview, loading: authLoading } = useAuth()
   const router = useRouter()
 
   const isGuestUser = user?.role === "guest"
@@ -62,18 +63,24 @@ export default function SearchPage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!searchId.trim()) return
+    if (!searchTerm.trim()) return
 
     setLoading(true)
     setSearched(true)
 
     try {
       const users = await fetchUsers()
-      const result = users.find((user) => user.id === searchId.trim())
-      setSearchResult(result || null)
+      const lowerTerm = searchTerm.toLowerCase()
+
+      // Search across all fields
+      const results = users.filter((user) => {
+        return Object.values(user).some((value) => value && value.toString().toLowerCase().includes(lowerTerm))
+      })
+
+      setSearchResults(results)
     } catch (err) {
       console.error("Search error:", err)
-      setSearchResult(null)
+      setSearchResults([])
     } finally {
       setLoading(false)
     }
@@ -95,13 +102,13 @@ export default function SearchPage() {
 
   // Function to get visible fields for display
   const getVisibleFields = (user: User) => {
-    if (!isGuestUser) {
-      // Admin users see all fields
+    if (!isGuestUser && !isGuestPreview) {
+      // Admin users (not in preview mode) see all fields
       return Object.entries(user).filter(([key, value]) => value && value.toString().trim() !== "")
     }
 
-    // Guest users see only configured visible fields
-    console.log("Search: Filtering fields for guest user")
+    // Guest users and admin in preview mode see only configured visible fields
+    console.log("Search: Filtering fields for guest user or preview mode")
     console.log("Search: Display settings:", displaySettings)
     console.log("Search: User data:", user)
 
@@ -112,15 +119,25 @@ export default function SearchPage() {
       return hasValue && isVisible
     })
 
-    console.log("Search: Visible fields for guest:", visibleFields)
+    console.log("Search: Visible fields for guest/preview:", visibleFields)
     return visibleFields
   }
 
   const handleBackToHome = () => {
-    if (user?.role === "admin") {
+    if (isGuestPreview) {
+      exitGuestPreview()
+    } else if (user?.role === "admin") {
       router.push("/admin")
     } else {
       router.push("/search")
+    }
+  }
+
+  const handleLogout = () => {
+    if (isGuestPreview) {
+      exitGuestPreview()
+    } else {
+      logout()
     }
   }
 
@@ -146,12 +163,30 @@ export default function SearchPage() {
 
   return (
     <div className="container">
-      <Header title={isGuestUser ? "Guest Search" : "User Search"} onLogout={logout} showRefresh={false} />
+      <Header
+        title={isGuestPreview ? "🔍 Guest Preview Mode" : isGuestUser ? "Guest Search" : "User Search"}
+        onLogout={handleLogout}
+        showRefresh={false}
+      />
 
-      {isGuestUser && (
+      {isGuestPreview && (
+        <div className="card" style={{ backgroundColor: "#fff3cd", border: "1px solid #ffeeba" }}>
+          <div className="flex justify-between align-center">
+            <p style={{ margin: 0, color: "#856404" }}>
+              🔍 <strong>Admin Preview Mode:</strong> You're seeing exactly what guest users see. Display settings are
+              being applied.
+            </p>
+            <button onClick={exitGuestPreview} className="button button-secondary">
+              Exit Preview
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isGuestUser && !isGuestPreview && (
         <div className="card" style={{ backgroundColor: "#f0f8ff", border: "1px solid #0066cc" }}>
           <p style={{ margin: 0, color: "#0066cc" }}>
-            👋 Logged in as a guest user.
+            👋 You're logged in as a guest user. <Link href="/login">Login as admin</Link> for full access.
           </p>
         </div>
       )}
@@ -162,9 +197,9 @@ export default function SearchPage() {
           <input
             type="text"
             className="search-input"
-            placeholder="Enter USER ID (e.g., KH12345)"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
+            placeholder="Enter USER ID (e.g., EMP001) or search by name, email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button type="submit" className="button">
             Search
@@ -174,7 +209,7 @@ export default function SearchPage() {
         {/* Back to Home button */}
         <div style={{ marginTop: "1rem" }}>
           <button onClick={handleBackToHome} className="button button-secondary">
-            Back to Dashboard
+            {isGuestPreview ? "Back to Admin Dashboard" : "Back to Homepage"}
           </button>
         </div>
       </div>
@@ -183,29 +218,36 @@ export default function SearchPage() {
 
       {searched && !loading && (
         <div className="card">
-          {searchResult ? (
+          {searchResults.length > 0 ? (
             <div>
-              <h3>User Found</h3>
-              <table className="table">
-                <tbody>
-                  {getVisibleFields(searchResult).map(([key, value]) => (
-                    <tr key={key}>
-                      <td>
-                        <strong>{formatFieldName(key)}</strong>
-                      </td>
-                      <td>{value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="mt-2">
-                <Link href={`/user/${searchResult.id}`} className="button">
-                  View Details & QR Code
-                </Link>
-              </div>
+              <h3>Search Results ({searchResults.length})</h3>
+              {searchResults.map((result, index) => (
+                <div
+                  key={result.id || index}
+                  style={{ marginBottom: "1rem", padding: "1rem", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  <table className="table">
+                    <tbody>
+                      {getVisibleFields(result).map(([key, value]) => (
+                        <tr key={key}>
+                          <td>
+                            <strong>{formatFieldName(key)}</strong>
+                          </td>
+                          <td>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div style={{ marginTop: "0.5rem" }}>
+                    <Link href={`/user/${result.id}`} className="button">
+                      View Profile & QR Code
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="error">No user found with USER ID: {searchId}</div>
+            <div className="error">No users found matching: "{searchTerm}"</div>
           )}
         </div>
       )}

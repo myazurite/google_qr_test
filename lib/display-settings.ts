@@ -4,7 +4,6 @@
 let displaySettings = {
   visibleColumns: ["name"], // Default to only name visible for guests
   alwaysVisible: ["id"], // USER ID is always visible
-  idColumn: "", // Which column to use as USER ID (empty = auto-generate)
 }
 
 export function getDisplaySettings() {
@@ -21,7 +20,6 @@ export function resetDisplaySettings() {
   displaySettings = {
     visibleColumns: ["name"],
     alwaysVisible: ["id"],
-    idColumn: "",
   }
   return { ...displaySettings }
 }
@@ -56,10 +54,4 @@ export function getAvailableColumns(users: any[]): string[] {
   })
 
   return sortedColumns
-}
-
-// Function to get the configured ID column
-export function getIdColumn(): string {
-  const settings = getDisplaySettings()
-  return settings.idColumn || ""
 }

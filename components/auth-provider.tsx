@@ -12,6 +12,7 @@ export type UserRole = "admin" | "guest"
 export interface AuthUser {
   username: string
   role: UserRole
+  isPreviewMode?: boolean // New flag for preview mode
 }
 
 // Define auth context type
@@ -21,6 +22,9 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>
   logout: () => void
   getHomeRoute: () => string
+  enterGuestPreview: () => void
+  exitGuestPreview: () => void
+  isGuestPreview: boolean
 }
 
 // Create auth context
@@ -30,6 +34,9 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: () => {},
   getHomeRoute: () => "/",
+  enterGuestPreview: () => {},
+  exitGuestPreview: () => {},
+  isGuestPreview: false,
 })
 
 // Mock users for demonstration
@@ -45,13 +52,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [originalUser, setOriginalUser] = useState<AuthUser | null>(null) // Store original admin user
   const router = useRouter()
   const pathname = usePathname()
+
+  // Check if currently in guest preview mode
+  const isGuestPreview = user?.isPreviewMode === true
 
   // Function to get the appropriate home route based on user role
   const getHomeRoute = () => {
     if (!user) return "/login"
+    if (isGuestPreview) return "/search"
     return user.role === "admin" ? "/admin" : "/search"
+  }
+
+  // Function to enter guest preview mode
+  const enterGuestPreview = () => {
+    if (user && user.role === "admin" && !isGuestPreview) {
+      console.log("Auth: Entering guest preview mode")
+      setOriginalUser(user) // Store the original admin user
+      setUser({
+        username: "guest_preview",
+        role: "guest",
+        isPreviewMode: true,
+      })
+      // Navigate to search page to simulate guest experience
+      router.push("/search")
+    }
+  }
+
+  // Function to exit guest preview mode
+  const exitGuestPreview = () => {
+    if (isGuestPreview && originalUser) {
+      console.log("Auth: Exiting guest preview mode")
+      setUser(originalUser) // Restore the original admin user
+      setOriginalUser(null)
+      // Navigate back to admin dashboard
+      router.push("/admin")
+    }
   }
 
   // Check for existing session on mount
@@ -79,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (loading || isLoggingOut) return
 
     console.log("Auth: Navigation check for path:", pathname)
-    console.log("Auth: Current user:", user?.username, user?.role)
+    console.log("Auth: Current user:", user?.username, user?.role, "Preview mode:", isGuestPreview)
 
     // Don't redirect if we're on the login page
     if (pathname === "/login") {
@@ -87,14 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    // Check if current path is a public path
+    // Check if current path is a public path (like /user/1, /user/2, etc.)
     const isPublicPath = PUBLIC_PATHS.some((publicPath) => pathname?.startsWith(publicPath))
-    if (isPublicPath && user) {
-      console.log("Auth: On public path with user, no redirect needed")
+    if (isPublicPath) {
+      console.log("Auth: On public path, allowing access without authentication")
       return
     }
 
-    // If no user and not on login page, redirect to login
+    // If no user and not on login page and not on public path, redirect to login
     if (!user) {
       console.log("Auth: No user, redirecting to login")
       router.push("/login")
@@ -104,19 +142,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // If user exists, handle role-based routing only for root path
     if (pathname === "/") {
       console.log("Auth: On root path, redirecting based on role")
-      if (user.role === "admin") {
-        router.push("/admin")
-      } else {
+      if (isGuestPreview || user.role === "guest") {
         router.push("/search")
+      } else if (user.role === "admin") {
+        router.push("/admin")
       }
     }
 
-    // If user is not admin but trying to access admin pages
-    if (pathname?.startsWith("/admin") && user.role !== "admin") {
+    // If user is in guest preview mode but trying to access admin pages
+    if (pathname?.startsWith("/admin") && isGuestPreview) {
+      console.log("Auth: Guest preview mode trying to access admin page, redirecting to search")
+      router.push("/search")
+    }
+
+    // If user is not admin (and not in preview mode) but trying to access admin pages
+    if (pathname?.startsWith("/admin") && user.role !== "admin" && !isGuestPreview) {
       console.log("Auth: User is not admin but trying to access admin page, redirecting to search")
       router.push("/search")
     }
-  }, [user, loading, pathname, router, isLoggingOut])
+  }, [user, loading, pathname, router, isLoggingOut, isGuestPreview])
 
   // Login function
   const login = async (username: string, password: string) => {
@@ -154,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Clear auth state
     setUser(null)
+    setOriginalUser(null) // Clear preview mode state
     localStorage.removeItem("user")
 
     console.log("Auth: Cleared auth state, redirecting to login")
@@ -175,6 +220,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         getHomeRoute,
+        enterGuestPreview,
+        exitGuestPreview,
+        isGuestPreview,
       }}
     >
       {children}

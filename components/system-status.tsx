@@ -22,7 +22,7 @@ export default function SystemStatus() {
       const response = await fetch("/api/users")
       const users = await response.json()
 
-      const isMockData = users.length > 0 && users[0].id === "KH00001" && users[0].name === "John Doe"
+      const isMockData = users.length > 0 && users[0].id === "EMP001" && users[0].name === "John Doe"
 
       setStatus({
         isConnected: response.ok,
