@@ -226,21 +226,21 @@ export default function UserPage() {
           </div>
         )}
 
-        {isGuestUser && !isGuestPreview && !isPublicAccess && (
-          <div
-            style={{
-              backgroundColor: "#f0f8ff",
-              border: "1px solid #0066cc",
-              padding: "0.75rem",
-              marginBottom: "1rem",
-              borderRadius: "4px",
-            }}
-          >
-            <p style={{ margin: 0, color: "#0066cc", fontSize: "0.875rem" }}>
-              👋 Viewing as guest user. <Link href="/login">Login as admin</Link> for full access.
-            </p>
-          </div>
-        )}
+        {/*{isGuestUser && !isGuestPreview && !isPublicAccess && (*/}
+        {/*  <div*/}
+        {/*    style={{*/}
+        {/*      backgroundColor: "#f0f8ff",*/}
+        {/*      border: "1px solid #0066cc",*/}
+        {/*      padding: "0.75rem",*/}
+        {/*      marginBottom: "1rem",*/}
+        {/*      borderRadius: "4px",*/}
+        {/*    }}*/}
+        {/*  >*/}
+        {/*    <p style={{ margin: 0, color: "#0066cc", fontSize: "0.875rem" }}>*/}
+        {/*      👋 Viewing as guest user. <Link href="/login">Login as admin</Link> for full access.*/}
+        {/*    </p>*/}
+        {/*  </div>*/}
+        {/*)}*/}
 
         <div className="qr-container">
           <QRCode url={currentUrl} />
