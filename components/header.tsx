@@ -15,7 +15,6 @@ interface HeaderProps {
 export default function Header({ title, onRefresh, onLogout, showRefresh = true, configLink }: HeaderProps) {
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault()
-    console.log("Header: Logout button clicked")
     onLogout()
   }
 

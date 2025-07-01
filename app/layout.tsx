@@ -6,9 +6,11 @@ import { AuthProvider } from "@/components/auth-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "User Management System",
+  title: "QR System",
   description: "User management system with Google Sheets integration",
-    generator: 'v0.dev'
+  icons: {
+    icon: "/favicon.ico",
+  }
 }
 
 export default function RootLayout({

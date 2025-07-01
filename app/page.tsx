@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function Home() {
+  // @ts-ignore
   const { user, loading, isGuestMode } = useAuth()
   const router = useRouter()
 
