@@ -2,7 +2,6 @@
 
 import {useEffect, useState} from "react"
 import {useParams} from "next/navigation"
-import Link from "next/link"
 import {fetchUsers, type User} from "@/lib/google-sheets"
 import QRCode from "@/components/qr-code"
 import UserProfile from "@/components/user-profile"
@@ -206,7 +205,7 @@ export default function UserPage() {
               color: "#856404",
             }}
           >
-            <p style={{ margin: 0 }}>⚠️ Using fallback data. There was an issue connecting to Google Sheets.</p>
+            <p style={{ margin: 0 }}>Using fallback data. There was an issue connecting to Google Sheets.</p>
           </div>
         )}
 

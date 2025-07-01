@@ -149,8 +149,8 @@ export default function ConfigPage() {
       <Header title="Google Sheets Configuration" onLogout={logout} showRefresh={false} />
 
       <div className="card">
-        <h2>Google Sheets API Configuration</h2>
-        <p className="mb-2">Configure your Google Sheets connection and test the data import.</p>
+        <h2>Google Sheets API Status</h2>
+        <p className="mb-2">Test data import.</p>
 
         <div className="button-group">
           <button onClick={testConnection} className="button button-secondary" disabled={testing}>
@@ -183,58 +183,6 @@ export default function ConfigPage() {
             </span>
           </div>
         </div>
-      </div>
-
-      <div className="card">
-        <h3>Column Mapping</h3>
-        <p>The system automatically maps common column names:</p>
-        <ul>
-          <li>
-            <strong>Name:</strong> "Name", "Full Name" → name
-          </li>
-          <li>
-            <strong>Email:</strong> "Email", "Mail" → email
-          </li>
-          <li>
-            <strong>Phone:</strong> "Phone", "Mobile", "Tel" → phone
-          </li>
-          <li>
-            <strong>ID:</strong> "ID", "User ID" → id (auto-generated if empty)
-          </li>
-          <li>
-            <strong>Address:</strong> "Address", "Location" → address
-          </li>
-          <li>
-            <strong>Company:</strong> "Company", "Organization" → company
-          </li>
-          <li>
-            <strong>Position:</strong> "Position", "Title", "Job" → position
-          </li>
-        </ul>
-        <p>
-          <small>Other columns will be preserved with their original names.</small>
-        </p>
-      </div>
-
-      <div className="card">
-        <h3>Setup Instructions</h3>
-        <ol>
-          <li>
-            ✅ Go to the{" "}
-            <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">
-              Google Cloud Console
-            </a>{" "}
-            (Done)
-          </li>
-          <li>✅ Create a new project or select an existing one (Done)</li>
-          <li>✅ Enable the Google Sheets API (Done)</li>
-          <li>✅ Create credentials (API Key) (Done)</li>
-          <li>✅ Copy your Sheet ID from the URL of your Google Sheet (Done)</li>
-          <li>✅ Make sure your Google Sheet is publicly readable (Done)</li>
-          <li>
-            🔄 <strong>Add data rows to your Google Sheet</strong> (In Progress)
-          </li>
-        </ol>
       </div>
     </div>
   )
