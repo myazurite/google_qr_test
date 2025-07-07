@@ -170,7 +170,7 @@ export default function UserPage() {
   return (
     <div className="container">
       <div className="card user-profile">
-        <h1>User Profile</h1>
+        <h1>Thông tin khách mời</h1>
 
         {isGuestPreview && (
           <div
@@ -209,21 +209,21 @@ export default function UserPage() {
           </div>
         )}
 
-        {isPublicAccess && (
-          <div
-            style={{
-              backgroundColor: "#e8f5e8",
-              border: "1px solid #4caf50",
-              padding: "0.75rem",
-              marginBottom: "1rem",
-              borderRadius: "4px",
-            }}
-          >
-            <p style={{ margin: 0, color: "#2e7d32", fontSize: "0.875rem" }}>
-              📱 <strong>Public Access:</strong> Viewing this profile via QR code.{" "}
-            </p>
-          </div>
-        )}
+        {/*{isPublicAccess && (*/}
+        {/*  <div*/}
+        {/*    style={{*/}
+        {/*      backgroundColor: "#e8f5e8",*/}
+        {/*      border: "1px solid #4caf50",*/}
+        {/*      padding: "0.75rem",*/}
+        {/*      marginBottom: "1rem",*/}
+        {/*      borderRadius: "4px",*/}
+        {/*    }}*/}
+        {/*  >*/}
+        {/*    <p style={{ margin: 0, color: "#2e7d32", fontSize: "0.875rem" }}>*/}
+        {/*      📱 <strong>Public Access:</strong> Viewing this profile via QR code.{" "}*/}
+        {/*    </p>*/}
+        {/*  </div>*/}
+        {/*)}*/}
 
         {/*{isGuestUser && !isGuestPreview && !isPublicAccess && (*/}
         {/*  <div*/}

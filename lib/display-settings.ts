@@ -3,7 +3,7 @@
 
 let displaySettings = {
   visibleColumns: ["name"], // Default to only name visible for guests
-  alwaysVisible: ["id", "email"], // USER ID is always visible
+  alwaysVisible: ["email"],
 }
 
 export function getDisplaySettings() {

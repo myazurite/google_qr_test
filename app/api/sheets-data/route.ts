@@ -70,7 +70,7 @@ function getStandardFieldName(columnName: string): string {
   const normalized = normalizeColumnName(columnName)
 
   if (normalized.includes("name") || normalized.includes("fullname")) return "name"
-  if (normalized.includes("email")) return "email"
+  if (normalized == "Email liên hệ") return "Email liên hệ"
   if (normalized.includes("phone") || normalized.includes("mobile") || normalized.includes("tel")) return "phone"
   if (normalized.includes("address") || normalized.includes("location")) return "address"
   if (normalized.includes("company") || normalized.includes("organization")) return "company"

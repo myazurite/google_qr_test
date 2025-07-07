@@ -11,7 +11,7 @@ export default function UserProfile({
   user,
   isGuestView,
   visibleColumns = [],
-  alwaysVisibleColumns = ["id"],
+  alwaysVisibleColumns = ["Họ và tên đệm", "Số điện thoại", "Email liên hệ"],
 }: UserProfileProps) {
   // Function to check if a field should be visible
   const isFieldVisible = (key: string): boolean => {
@@ -46,8 +46,6 @@ export default function UserProfile({
 
   return (
     <div>
-      <h2>{user.name || user.id}</h2>
-
       {/* Debug info for admins */}
       {!isGuestView && (
         <div style={{ fontSize: "0.875rem", color: "#666", marginBottom: "1rem" }}>
@@ -64,7 +62,6 @@ export default function UserProfile({
       {/*)}*/}
 
       <div className="card">
-        <h3>User Information</h3>
         {entries.length > 0 ? (
           <table className="table">
             <tbody>
