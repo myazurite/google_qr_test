@@ -164,6 +164,9 @@ export default function AdminDashboard() {
           <Link href="/debug" className="button button-secondary">
             Debug Information
           </Link>
+          <Link href="https://pnipc-qr-nomailer.vercel.app/admin" target="_blank" className="button button-secondary">
+            Company list
+          </Link>
         </div>
       </div>
 

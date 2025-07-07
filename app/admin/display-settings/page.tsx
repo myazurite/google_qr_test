@@ -119,7 +119,6 @@ export default function DisplaySettingsPage() {
 
       <div className="card">
         <h2>Configure Guest View</h2>
-        <p>Choose which columns are visible to guest users and QR code scanners. USER ID is always visible.</p>
 
         {availableColumns.length === 0 ? (
           <div className="error">No columns found. Make sure your Google Sheet has data and an ID column.</div>
@@ -128,9 +127,6 @@ export default function DisplaySettingsPage() {
             {/* Visible Columns Configuration */}
             <div className="form-group">
               <label>Visible Columns for Guests:</label>
-              <small style={{ display: "block", marginBottom: "1rem", color: "#666" }}>
-                USER ID is always visible. Select additional columns to show to guest users and QR code scanners.
-              </small>
               <div style={{ marginTop: "1rem" }}>
                 {availableColumns.map((column) => {
                   const isVisible = visibleColumns.includes(column)
@@ -184,44 +180,41 @@ export default function DisplaySettingsPage() {
         )}
       </div>
 
-      <div className="card">
-        <h3>Current Settings</h3>
-        <p>
-          <strong>USER ID:</strong> Always visible (from Google Sheets ID column)
-        </p>
-        <p>
-          <strong>Guest Visible Columns:</strong> USER ID
-          {visibleColumns.length > 0 && `, ${visibleColumns.map(formatColumnName).join(", ")}`}
-        </p>
-        <p>
-          <strong>Total Visible to Guests:</strong> {visibleColumns.length + 1} columns
-        </p>
-      </div>
+      {/*<div className="card">*/}
+      {/*  <h3>Current Settings</h3>*/}
+      {/*  <p>*/}
+      {/*    <strong>Guest Visible Columns:</strong> USER ID*/}
+      {/*    {visibleColumns.length > 0 && `, ${visibleColumns.map(formatColumnName).join(", ")}`}*/}
+      {/*  </p>*/}
+      {/*  <p>*/}
+      {/*    <strong>Total Visible to Guests:</strong> {visibleColumns.length + 1} columns*/}
+      {/*  </p>*/}
+      {/*</div>*/}
 
-      <div className="card">
-        <h3>Preview</h3>
-        <p>This is what guest users and QR code scanners will see:</p>
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>USER ID</th>
-                {visibleColumns.map((column) => (
-                  <th key={column}>{formatColumnName(column)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>EMP001</td>
-                {visibleColumns.map((column) => (
-                  <td key={column}>Sample {formatColumnName(column)}</td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/*<div className="card">*/}
+      {/*  <h3>Preview</h3>*/}
+      {/*  <p>This is what guest users and QR code scanners will see:</p>*/}
+      {/*  <div className="table-container">*/}
+      {/*    <table className="table">*/}
+      {/*      <thead>*/}
+      {/*        <tr>*/}
+      {/*          <th>USER ID</th>*/}
+      {/*          {visibleColumns.map((column) => (*/}
+      {/*            <th key={column}>{formatColumnName(column)}</th>*/}
+      {/*          ))}*/}
+      {/*        </tr>*/}
+      {/*      </thead>*/}
+      {/*      <tbody>*/}
+      {/*        <tr>*/}
+      {/*          <td>EMP001</td>*/}
+      {/*          {visibleColumns.map((column) => (*/}
+      {/*            <td key={column}>Sample {formatColumnName(column)}</td>*/}
+      {/*          ))}*/}
+      {/*        </tr>*/}
+      {/*      </tbody>*/}
+      {/*    </table>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </div>
   )
 }
