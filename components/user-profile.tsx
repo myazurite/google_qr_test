@@ -29,18 +29,18 @@ export default function UserProfile({
       value && value.toString().trim() !== "" && isFieldVisible(key),
   )
 
-  // Function to format field names nicely
-  const formatFieldName = (key: string): string => {
-    // Special case for ID
-    if (key === "id") return "ID"
-
-    // Handle common abbreviations and formats
-    return key
-        .replace(/([A-Z])/g, " $1") // Add space before capital letters
-        .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
-        .replace(/\b\w/g, (str) => str.toUpperCase()) // Capitalize each word
-        .trim()
-  }
+  // // Function to format field names nicely
+  // const formatFieldName = (key: string): string => {
+  //   // Special case for ID
+  //   if (key === "id") return "ID"
+  //
+  //   // Handle common abbreviations and formats
+  //   return key
+  //       .replace(/([A-Z])/g, " $1") // Add space before capital letters
+  //       .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
+  //       .replace(/\b\w/g, (str) => str.toUpperCase()) // Capitalize each word
+  //       .trim()
+  // }
 
   // Debug logging for guest view
 
@@ -71,7 +71,7 @@ export default function UserProfile({
               {entries.map(([key, value]) => (
                 <tr key={key}>
                   <td>
-                    <strong>{formatFieldName(key)}</strong>
+                    <strong>{key}</strong>
                   </td>
                   <td>{value}</td>
                 </tr>
