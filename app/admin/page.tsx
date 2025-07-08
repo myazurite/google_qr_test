@@ -155,9 +155,9 @@ export default function AdminDashboard() {
           <Link href="/admin/display-settings" className="button button-secondary">
             Guest Display Settings
           </Link>
-          <button onClick={handleTestGuestSearch} className="button button-secondary">
-            🔍 Preview as Guest
-          </button>
+          {/*<button onClick={handleTestGuestSearch} className="button button-secondary">*/}
+          {/*  🔍 Preview as Guest*/}
+          {/*</button>*/}
           <Link href="/admin/sheets-debug" className="button button-secondary">
             Debug Google Sheets
           </Link>
@@ -166,6 +166,9 @@ export default function AdminDashboard() {
           </Link>
           <Link href="https://pnipc-qr-nomailer.vercel.app/admin" target="_blank" className="button button-secondary">
             Company list
+          </Link>
+          <Link href="https://google-qr-b2c.vercel.app/" target="_blank" className="button button-secondary">
+            B2c list
           </Link>
         </div>
       </div>
