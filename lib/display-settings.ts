@@ -2,8 +2,8 @@
 // In a real app, this would be stored in a database
 
 let displaySettings = {
-  visibleColumns: ["name"], // Default to only name visible for guests
-  alwaysVisible: ["email"],
+  visibleColumns: ["Họ và tên đệm", "Email liên hệ", "Số điện thoại"],
+  alwaysVisible: ["Họ và tên đệm", "Email liên hệ"],
 }
 
 export function getDisplaySettings() {

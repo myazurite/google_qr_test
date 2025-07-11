@@ -10,7 +10,7 @@ interface UserProfileProps {
 export default function UserProfile({
   user,
   isGuestView,
-  visibleColumns = [],
+  visibleColumns = ["Họ và tên đệm", "Số điện thoại", "Email liên hệ"],
   alwaysVisibleColumns = ["Họ và tên đệm", "Số điện thoại", "Email liên hệ"],
 }: UserProfileProps) {
   // Function to check if a field should be visible
@@ -43,7 +43,7 @@ export default function UserProfile({
   // }
 
   // Debug logging for guest view
-
+  console.log(visibleColumns, alwaysVisibleColumns)
   return (
     <div>
       {/* Debug info for admins */}
