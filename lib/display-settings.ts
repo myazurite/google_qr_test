@@ -2,7 +2,7 @@
 // In a real app, this would be stored in a database
 
 let displaySettings = {
-  visibleColumns: ["Họ và tên đệm", "Email liên hệ", "Số điện thoại"],
+  visibleColumns: ["Họ và tên đệm", "Email liên hệ", "Số điện thoại","TÊN DOANH NGHIỆP", "NGƯỜI ĐẠI DIỆN", "CHỨC VỤ", "ĐIỆN THOẠI", "EMAIL"],
   alwaysVisible: ["Họ và tên đệm", "Email liên hệ"],
 }
 
